@@ -4,6 +4,8 @@ Web app to view and edit tesla light show binary files.
 
 🚧 Note: this app is work in progress 🚧
 
+![](https://github.com/recallfx/tesla-light-show-editor/blob/main/public/view.gif?raw=true)
+
 ## Uploading files
 
 It supports uploading multiple files at once or zipped.
