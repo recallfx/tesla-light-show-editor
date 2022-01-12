@@ -1,6 +1,6 @@
 {
-  "short_name": "Tesla lightsshow parser",
-  "name": "A parser for fseq files specifically for Tesla ligts show",
+  "short_name": "Tesla light show editor",
+  "name": "eb app to view and edit tesla light show binary files",
   "icons": [
     {
       "src": "favicon.ico",
