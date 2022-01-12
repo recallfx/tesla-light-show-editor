@@ -199,7 +199,7 @@ export default function Upload({ received }: UploadProps) {
 
                 <div className='justify-center flex flex-row items-center mt-3'>
                   <span className='mr-3'>Or you can </span>
-                  <button type='button' className='btn glass' onClick={onLoadDemoFile}>
+                  <button type='button' className='btn btn-primary' onClick={onLoadDemoFile}>
                     Load demo
                   </button>
                 </div>

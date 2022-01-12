@@ -22,7 +22,7 @@ export default function Home({ viewerAvailable }: HomeProps) {
             )}
             {viewerAvailable && (
               <div>
-                <Link to='upload' className='btn btn-primary'>
+                <Link to='upload' className='btn btn-primary mr-2'>
                   Upload new file
                 </Link>
                 <Link to='viewer' className='btn btn-secondary'>
