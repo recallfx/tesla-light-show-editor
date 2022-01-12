@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* this allows timeline to have visible scrollbars */
+::-webkit-scrollbar {
+  background: #161616;
+  color: gray;
+}
+
+::-webkit-scrollbar-thumb {
+  background: gray;
+}
+
+::-webkit-scrollbar-corner {
+  background: #161616;
+}
