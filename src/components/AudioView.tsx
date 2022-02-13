@@ -1,18 +1,35 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { RGBM7Encoding } from 'three';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
+import { useSetRecoilState } from 'recoil';
 import WaveSurfer from 'wavesurfer.js';
 import playhead from 'wavesurfer.js/src/plugin/playhead';
+import throttle from 'lodash/throttle';
+import { currentTimeState, progressState } from '../foundation/state';
+import Progress from './Progress';
 
 export interface AudioViewProps {
   audioArrayBuffer: ArrayBuffer | undefined | null;
-  updateTimelinePosition: Function;
 }
 
-export default function AudioView({ audioArrayBuffer, updateTimelinePosition }: AudioViewProps) {
+export default function AudioView({ audioArrayBuffer }: AudioViewProps) {
+  const setCurrentTime = useSetRecoilState(currentTimeState);
+  const setProgress = useSetRecoilState(progressState);
+
   const [loading, setLoading] = useState<Boolean>(true);
-  const [progress, setProgress] = useState<number>(0.0);
   const wavesurferContainerRef = useRef(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+
+
+  const audioProcessHandler = () => {
+    if (wavesurferRef.current) {
+      const localCurrentTime = wavesurferRef.current.getCurrentTime();
+      setProgress(localCurrentTime);
+      setCurrentTime(localCurrentTime);
+    }
+  };
+
+  const throttledAudioProcess = useMemo(
+    () => throttle(audioProcessHandler, 20)
+  , []);
 
   useEffect(() => {
     if (wavesurferContainerRef.current && audioArrayBuffer) {
@@ -41,23 +58,10 @@ export default function AudioView({ audioArrayBuffer, updateTimelinePosition }: 
         setLoading(false);
       });
 
-      wavesurferRef.current.on('seek', () => {
-        if (wavesurferRef.current) {
-          const currentTime = wavesurferRef?.current?.getCurrentTime();
-          updateTimelinePosition(currentTime);
-          setProgress(currentTime);
-        }
-      });
-
-      wavesurferRef.current.on('audioprocess', () => {
-        if (wavesurferRef.current && wavesurferRef.current.isPlaying()) {
-          const currentTime = wavesurferRef.current.getCurrentTime();
-          setProgress(currentTime);
-          updateTimelinePosition(currentTime);
-        }
-      });
+      wavesurferRef.current.on('seek', throttledAudioProcess);
+      wavesurferRef.current.on('audioprocess', throttledAudioProcess);
     }
-  }, [audioArrayBuffer]);
+  }, [audioArrayBuffer, setCurrentTime]);
 
   const onPlayPauseHandler = () => {
     if (wavesurferRef.current?.isPlaying()) {
@@ -77,7 +81,7 @@ export default function AudioView({ audioArrayBuffer, updateTimelinePosition }: 
             <button className='btn btn-primary btn-xs mr-3' type='button' onClick={onPlayPauseHandler}>
               Play/pause
             </button>
-            <span>T:{Math.round(progress * 100) / 100}</span>
+            <Progress />
           </>
         )}
       </div>

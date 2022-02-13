@@ -1,4 +1,4 @@
-const { serve, build, analyzeMetafile } = require('esbuild');
+const { serve, build } = require('esbuild');
 const fs = require('fs-extra');
 const postCssPlugin = require('esbuild-plugin-postcss2');
 
@@ -34,7 +34,6 @@ const buildParams = {
   treeShaking: true,
   metafile: true,
   mainFields: ['module', 'main', 'browser'],
-  // watch: isDev,
 };
 
 (async () => {
@@ -44,8 +43,7 @@ const buildParams = {
   let serveResult;
 
   try {
-    const buildResult = await build(buildParams);
-    console.log(await analyzeMetafile(buildResult.metafile));
+    await build(buildParams);
 
     serveResult = await serve(
       {

@@ -2,16 +2,7 @@ import React, { ChangeEventHandler, ChangeEvent, useRef, useState } from 'react'
 import { unzipSync } from 'fflate';
 
 import Footer from '../foundation/Footer';
-
-export interface ArrayBufferFile {
-  name: string;
-  arrayBuffer: ArrayBuffer | null;
-}
-
-export interface ILightshow {
-  fseq?: ArrayBufferFile;
-  audio?: ArrayBufferFile;
-}
+import { ILightshow } from '../types';
 
 export interface UploadProps {
   // eslint-disable-next-line no-unused-vars
@@ -124,7 +115,7 @@ export default function Upload({ received }: UploadProps) {
   };
 
   const onLoadDemoFile = async () => {
-    const response = await fetch('/lightshows/lightshow.zip');
+    const response = await fetch('lightshows/lightshow.zip');
     const content = await response.blob();
     const zipFileArrayBuffer = await content.arrayBuffer();
 

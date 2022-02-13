@@ -1,23 +1,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 html,
 body,
 #root {
-  height: 100%;
+    height: 100vh;
+    width: 100vw;
+    overflow: auto;
+    overscroll-behavior-y: none;
 }
 
+
 /* this allows timeline to have visible scrollbars */
+
 ::-webkit-scrollbar {
-  background: #161616;
-  color: gray;
+    background: #161616;
+    color: gray;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: gray;
+    background: gray;
 }
 
 ::-webkit-scrollbar-corner {
-  background: #161616;
+    background: #161616;
 }

@@ -1,8 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Timeline, TimelineRow, TimelineModel, TimelineOptions, TimelineScrollEvent } from 'animation-timeline-js';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Timeline, TimelineModel } from 'animation-timeline-js';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { currentTimeState, timelineRowsState } from '../foundation/state';
 
-export default function Timeline2({ timelineRows, updateTimelinePosition, time }: { timelineRows: Array<any>, updateTimelinePosition: Function, time: number }) {
-  const [loading, setLoading] = useState(true);
+export default function Timeline2() {
+  const [currentTime, setCurrentTime] = useRecoilState(currentTimeState);
+  const timelineRows = useRecoilValue(timelineRowsState);
+
   const timelineElRef = useRef(null);
   const outlineHeaderRef = useRef(null);
   const outlineScrollContainerRef = useRef(null);
@@ -11,11 +15,13 @@ export default function Timeline2({ timelineRows, updateTimelinePosition, time }
 
   useEffect(() => {
     // react error workaround
-    const onwheel = (e) => e.preventDefault();
-    document.body.addEventListener('onwheel', onwheel, {passive: false});
+    const onwheel = (e: any) => e.preventDefault();
+    document.body.addEventListener('onwheel', onwheel, { passive: false });
 
     if (timelineElRef.current && timelineRows.length) {
-      const timeline = new Timeline({ id: timelineElRef.current, stepVal: 1000 }, { rows: timelineRows } as TimelineModel);
+      const timeline = new Timeline({ id: timelineElRef.current, stepVal: 100, stepPx: 100, snapStep: 20, snapAllKeyframesOnMove: true }, {
+        rows: timelineRows,
+      } as TimelineModel);
       const options = timeline.getOptions();
       timelineRef.current = timeline;
 
@@ -28,7 +34,6 @@ export default function Timeline2({ timelineRows, updateTimelinePosition, time }
 
       timeline.onScroll((obj) => {
         if (options) {
-
           if (outlineScrollContainerRef.current) {
             const outlineScrollContainerEl = outlineScrollContainerRef.current as HTMLElement;
 
@@ -43,25 +48,26 @@ export default function Timeline2({ timelineRows, updateTimelinePosition, time }
         }
       });
 
-      timeline.onTimeChanged(({val, source}) => {
-        if (source !== "setTimeMethod") {
-          updateTimelinePosition(val/1000);
+      timeline.onTimeChanged(({ val, source }) => {
+        if (source !== 'setTimeMethod') {
+          setCurrentTime(val / 1000);
         }
       });
     }
 
-    setLoading(true);
     // cleanup
-    return () => { document.body.removeEventListener('onwheel', onwheel); }
-  }, [timelineRows]);
+    return () => {
+      document.body.removeEventListener('onwheel', onwheel);
+    };
+  }, [timelineRows, setCurrentTime]);
 
   useEffect(() => {
     if (timelineRef.current) {
-      timelineRef.current.setTime(time*1000);
+      timelineRef.current.setTime(currentTime * 1000);
     }
-  }, [time])
+  }, [currentTime]);
 
-  const outlineMouseWheelHandler = (event) => {  
+  const outlineMouseWheelHandler = (event: any) => {
     // workaround react issue
     // eslint-disable-next-line no-param-reassign
     event.preventDefault = () => {};
@@ -82,14 +88,18 @@ export default function Timeline2({ timelineRows, updateTimelinePosition, time }
         marginBottom: options?.rowsStyle?.marginBottom || 2,
       };
 
-        return (
+      return (
         // eslint-disable-next-line react/no-array-index-key
-        <div key={index} className='outline-node hover:bg-zinc-500 pl-[20px] [user-select:none] w-full text-white text-xs items-center flex' style={style}>
+        <div
+          key={index}
+          className='outline-node hover:bg-zinc-500 pl-[20px] [user-select:none] w-full text-white text-xs items-center flex'
+          style={style}
+        >
           {row.title || `Track ${index}`}
         </div>
       );
     });
-  }, [timelineRows, loading]);
+  }, [timelineRows]);
 
   return (
     <div className='timeline-container flex h-[600px] overflow-hidden bg-zinc-800'>

@@ -1,9 +1,10 @@
-import React, { Suspense, useMemo, useState, useRef, useEffect } from 'react';
+import React, { Suspense, useState, useRef } from 'react';
 import { Canvas, Vector3 } from '@react-three/fiber';
 import { PresentationControls, useGLTF, MeshReflectorMaterial, Environment, Stage } from '@react-three/drei';
+import { useRecoilBridgeAcrossReactRoots_UNSTABLE, useRecoilValue } from 'recoil';
 
-import { Color } from 'three';
 import { channelsConfig } from '../Config';
+import { channelValueStateFamily } from '../foundation/state';
 
 function Model(props: any) {
   const { scene } = useGLTF('/models/Model_S/ModelS.gltf');
@@ -11,34 +12,12 @@ function Model(props: any) {
   return <primitive object={scene} {...props} />;
 }
 
-function ChannelSpheres({
-  points,
-  id,
-  label,
-  value,
-  subscribe,
-}: {
-  points: Array<Vector3>;
-  id: number;
-  label: String;
-  value: number;
-  subscribe: Function;
-}) {
+function ChannelSpheres({ points, id, label }: { points: Array<Vector3>; id: number; label: String }) {
   const matRef = useRef();
+  const channelValue = useRecoilValue(channelValueStateFamily(id - 1));
   const [hovered, hover] = useState(false);
   const [clicked, click] = useState(false);
   let color: string;
-
-  subscribe((channels) => {
-    if (matRef.current) {
-      const v = channels[id - 1];
-
-      const tmp = new Color();
-      tmp.setColorName(v > 0 ? 'red' : 'orange');
-
-      matRef.current.color = tmp;
-    }
-  });
 
   switch (id) {
     case 25:
@@ -72,7 +51,7 @@ function ChannelSpheres({
     color = 'white';
   }
 
-  if (value > 0) {
+  if (channelValue > 0) {
     color = 'red';
   }
 
@@ -100,26 +79,8 @@ function ChannelSpheres({
   return <>{spheres}</>;
 }
 
-export interface ModelViewProps {
-  channels: Array<number>;
-  subscribe: Function;
-}
-
-export default function ModelView({ channels, subscribe }: ModelViewProps) {
-  const channelSpheres = useMemo(
-    () =>
-      channelsConfig.map(({ id, points, title }) => (
-        <ChannelSpheres
-          id={id}
-          points={points as Array<Vector3>}
-          label={title}
-          key={`${id}`}
-          value={channels[id - 1]}
-          subscribe={subscribe}
-        />
-      )),
-    [],
-  );
+export default function ModelView() {
+  const RecoilBridge = useRecoilBridgeAcrossReactRoots_UNSTABLE();
 
   return (
     <Suspense fallback={null}>
@@ -130,8 +91,12 @@ export default function ModelView({ channels, subscribe }: ModelViewProps) {
 
         <PresentationControls speed={1.5} global zoom={1.5} polar={[0, 0]}>
           <Stage environment='warehouse' intensity={0.5} contactShadow={false} shadowBias={-0.0015}>
-            <Model />
-            {channelSpheres}
+            <RecoilBridge>
+              <Model />
+              {channelsConfig.map(({ id, points, title }) => (
+                <ChannelSpheres id={id} points={points as Array<Vector3>} label={title} key={`${id}`} />
+              ))}
+            </RecoilBridge>
           </Stage>
 
           <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>

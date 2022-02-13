@@ -1,30 +1,29 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-
-import { ILightshow } from './Upload';
-import Footer from '../foundation/Footer';
+import { useRecoilValue } from 'recoil';
+import InfoModal from '../components/InfoModal';
 
 import Lightshow from '../components/Lightshow';
+import Nav from '../foundation/Nav';
+import { fseqBufferState } from '../foundation/state';
 
 // workaround esbuild issue with spilling variables to global (this will rename other definitions)
 // @ts-ignore
 const audioContext = AudioContext;
 
-export interface ViewerProps {
-  lightshow: ILightshow | undefined;
-}
+export default function Viewer() {
+  const fseqBuffer = useRecoilValue(fseqBufferState);
 
-export default function Viewer({ lightshow }: ViewerProps) {
-  const hasLightshow = Boolean(lightshow?.fseq?.arrayBuffer);
+  const hasLightshow = Boolean(fseqBuffer);
 
   return (
     <section className='flex flex-col justify-between min-h-screen'>
-      <main className='flex-grow container mx-auto'>
-        {hasLightshow && lightshow && <Lightshow lightshow={lightshow} />}
-        {!hasLightshow && <Navigate to='/upload' replace />}
-      </main>
-
-      <Footer />
+      <Nav>
+        <main className='flex-grow'>
+          {hasLightshow ? <Lightshow /> : <Navigate to='/upload' replace />}
+        </main>
+        <InfoModal />
+      </Nav>
     </section>
   );
 }
